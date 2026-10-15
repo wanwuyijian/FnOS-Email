@@ -1,0 +1,25 @@
+#!/bin/bash
+# 升级前：停止运行中的服务并备份配置（不依赖脚本自身路径）
+APPNAME="${TRIM_APPNAME:-fn-mail-assistant}"
+PKGVAR="${TRIM_PKGVAR:-/var/apps/$APPNAME/var}"
+RUN="$PKGVAR/run"
+
+touch "$RUN/stop.flag" 2>/dev/null
+if [ -f "$RUN/server.pid" ]; then
+    SPID="$(cat "$RUN/server.pid" 2>/dev/null)"
+    [ -n "$SPID" ] && kill "$SPID" 2>/dev/null
+    [ -n "$SPID" ] && kill -9 "$SPID" 2>/dev/null
+    rm -f "$RUN/server.pid"
+fi
+if [ -f "$RUN/launcher.pid" ]; then
+    LPID="$(cat "$RUN/launcher.pid" 2>/dev/null)"
+    [ -n "$LPID" ] && kill "$LPID" 2>/dev/null
+    rm -f "$RUN/launcher.pid"
+fi
+rm -f "$RUN/stop.flag"
+
+if [ -f "$PKGVAR/config.json" ]; then
+    cp -f "$PKGVAR/config.json" "$PKGVAR/config.json.upgrade-backup" 2>/dev/null
+    echo "config backed up"
+fi
+exit 0

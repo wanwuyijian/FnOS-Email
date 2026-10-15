@@ -1,0 +1,10 @@
+#!/bin/bash
+# 安装前检查：确认 python3 可用
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "错误: 系统缺少 python3, 无法安装" >> "${TRIM_TEMP_LOGFILE:-/dev/null}"
+    echo "错误: 系统缺少 python3, 无法安装"
+    exit 1
+fi
+PYV="$(python3 -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null)"
+echo "python3 version: $PYV"
+exit 0

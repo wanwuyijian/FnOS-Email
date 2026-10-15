@@ -1,0 +1,15 @@
+# 统一规范：文本文件自动识别，包内脚本强制 LF（fnOS 上必须是 LF，CRLF 会导致执行失败）
+* text=auto
+
+# fnOS 生命周期脚本与守护脚本：强制 LF
+fpk/cmd/* text eol=lf
+app/bin/*.sh text eol=lf
+fpk/wizard/* text eol=lf
+
+# 二进制文件不做换行符转换
+*.png binary
+*.PNG binary
+*.jpg binary
+*.jpeg binary
+*.fpk binary
+*.tgz binary

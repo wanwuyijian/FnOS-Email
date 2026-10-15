@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>邮件定时助手</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 登录遮罩 -->
+<div id="login-mask" style="display:none">
+  <div class="login-box">
+    <h2>邮件定时助手</h2>
+    <div class="sub" id="login-sub">fn-mail-assistant</div>
+    <form id="login-form">
+      <label class="field"><span id="login-lbl">管理密码</span>
+        <input type="password" id="login-pwd" autocomplete="new-password" required>
+      </label>
+      <button class="primary" style="width:100%" id="login-btn" type="submit">进入</button>
+      <div class="hint" id="login-hint" style="margin-top:10px;text-align:center"></div>
+    </form>
+  </div>
+</div>
+
+<aside>
+  <div class="brand">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+      <rect x="2" y="5" width="20" height="14" rx="3" stroke="#3b82f6" stroke-width="2"/>
+      <path d="M3 7l9 6 9-6" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="19" cy="4" r="3.4" fill="#f59e0b"/>
+    </svg>
+    邮件定时助手
+  </div>
+  <nav id="nav">
+    <a data-page="overview" class="active"><span class="ico">🏠</span>概览</a>
+    <a data-page="compose"><span class="ico">✏️</span>写邮件</a>
+    <a data-page="inbox"><span class="ico">📥</span>收件箱</a>
+    <a data-page="tasks"><span class="ico">⏰</span>定时任务</a>
+    <a data-page="accounts"><span class="ico">👤</span>邮箱账号</a>
+    <a data-page="system"><span class="ico">⚙️</span>系统</a>
+  </nav>
+  <div class="spacer"></div>
+  <div class="meta">
+    <b>fn-mail-assistant</b><br>
+    <span id="side-ver">v?</span><br>
+    <span id="side-time"></span>
+  </div>
+</aside>
+
+<main>
+  <header>
+    <h1 id="page-title">概览</h1>
+    <div style="flex:1"></div>
+    <button id="btn-logout" class="small">退出登录</button>
+  </header>
+  <div id="content"></div>
+</main>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

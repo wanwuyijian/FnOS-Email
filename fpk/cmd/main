@@ -1,0 +1,56 @@
+#!/bin/bash
+# fn-mail-assistant 服务控制: start | stop | status
+APPNAME="${TRIM_APPNAME:-fn-mail-assistant}"
+APPDEST="${TRIM_APPDEST:-/var/apps/$APPNAME/app}"
+PKGVAR="${TRIM_PKGVAR:-/var/apps/$APPNAME/var}"
+RUN="$PKGVAR/run"
+
+mkdir -p "$RUN"
+
+alive() {
+    [ -f "$RUN/server.pid" ] && kill -0 "$(cat "$RUN/server.pid" 2>/dev/null)" 2>/dev/null
+}
+
+case "$1" in
+    start)
+        if alive; then
+            echo "already running"
+            exit 0
+        fi
+        mkdir -p "$PKGVAR/logs" "$PKGVAR/tmp"
+        rm -f "$RUN/stop.flag"
+        nohup "$APPDEST/bin/launcher.sh" </dev/null >> "$PKGVAR/logs/launcher.log" 2>&1 &
+        echo "started"
+        ;;
+    stop)
+        touch "$RUN/stop.flag"
+        if [ -f "$RUN/server.pid" ]; then
+            SPID="$(cat "$RUN/server.pid")"
+            kill "$SPID" 2>/dev/null
+            for _ in 1 2 3 4 5 6 7 8 9 10; do
+                kill -0 "$SPID" 2>/dev/null || break
+                sleep 0.5
+            done
+            kill -9 "$SPID" 2>/dev/null
+            rm -f "$RUN/server.pid"
+        fi
+        if [ -f "$RUN/launcher.pid" ]; then
+            LPID="$(cat "$RUN/launcher.pid")"
+            kill "$LPID" 2>/dev/null
+            rm -f "$RUN/launcher.pid"
+        fi
+        rm -f "$RUN/stop.flag"
+        echo "stopped"
+        ;;
+    status)
+        if alive; then
+            exit 0
+        fi
+        exit 3
+        ;;
+    *)
+        echo "usage: main start|stop|status"
+        exit 1
+        ;;
+esac
+exit 0

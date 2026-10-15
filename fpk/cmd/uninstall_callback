@@ -1,0 +1,3 @@
+#!/bin/bash
+# 卸载完成（var/shares 保留，无需额外操作）
+exit 0

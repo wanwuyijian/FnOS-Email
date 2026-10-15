@@ -1,0 +1,11 @@
+#!/bin/bash
+# 升级完成后：恢复数据目录并启动（fnOS 会调用 main start，此处只确保目录）
+APPNAME="${TRIM_APPNAME:-fn-mail-assistant}"
+PKGVAR="${TRIM_PKGVAR:-/var/apps/$APPNAME/var}"
+APPDEST="${TRIM_APPDEST:-/var/apps/$APPNAME/app}"
+
+mkdir -p "$PKGVAR/logs" "$PKGVAR/crash" "$PKGVAR/tmp/uploads" "$PKGVAR/run"
+chmod 755 "$APPDEST/bin/launcher.sh" 2>/dev/null
+chmod 700 "$PKGVAR" 2>/dev/null
+echo "upgrade done: $TRIM_OLD_APPVER -> $TRIM_APPVER"
+exit 0

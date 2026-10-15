@@ -1,0 +1,8 @@
+#!/bin/bash
+# 安装完成后初始化数据目录
+APPNAME="${TRIM_APPNAME:-fn-mail-assistant}"
+PKGVAR="${TRIM_PKGVAR:-/var/apps/$APPNAME/var}"
+mkdir -p "$PKGVAR/logs" "$PKGVAR/crash" "$PKGVAR/tmp/uploads" "$PKGVAR/run"
+chmod 700 "$PKGVAR" 2>/dev/null
+echo "install done, var=$PKGVAR"
+exit 0
