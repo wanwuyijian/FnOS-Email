@@ -68,6 +68,37 @@ async function showLogin() {
       boot();
     } catch (err) { $("#login-hint").textContent = err.message; }
   };
+
+  /* 重置数据（忘记密码自救）：点击 -> 输入重置码 -> 清空数据并关闭应用 */
+  const resetBox = $("#reset-box"), resetCode = $("#reset-code");
+  resetBox.style.display = "none";
+  resetCode.value = "";
+  $("#reset-link").onclick = () => {
+    const show = resetBox.style.display === "none";
+    resetBox.style.display = show ? "block" : "none";
+    if (show) resetCode.focus();
+  };
+  $("#reset-go").onclick = async () => {
+    const code = (resetCode.value || "").trim();
+    if (!code) return toast("请输入重置码", false);
+    if (!confirm("确定重置应用数据吗？\n\n将清空邮箱账号、定时任务与发送历史，并关闭应用。此操作不可恢复！")) return;
+    const btn = $("#reset-go");
+    btn.disabled = true; btn.textContent = "重置中…";
+    try {
+      const r = await POST("/api/auth/reset", { code });
+      TOKEN = "";
+      localStorage.removeItem("fnmail_token");
+      $("#login-hint").textContent = (r.data && r.data.message) ||
+        "数据已重置, 应用正在关闭。请重新打开应用设置新的管理密码。";
+      $("#login-pwd").disabled = true;
+      $("#login-btn").disabled = true;
+      btn.textContent = "应用已关闭";
+      toast("数据已重置, 应用即将关闭");
+    } catch (e) {
+      toast(e.message, false);
+      btn.disabled = false; btn.textContent = "确认重置并关闭应用";
+    }
+  };
 }
 
 /* ---------- 导航 ---------- */

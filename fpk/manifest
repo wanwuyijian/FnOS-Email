@@ -1,5 +1,5 @@
 appname = fn-mail-assistant
-version = 1.1.1
+version = 1.1.2
 display_name = 邮件定时助手
 desc = 邮件收发与本地文件定时发送助手，支持POP3/IMAP，内置163/阿里邮箱预设
 platform = arm
@@ -13,4 +13,4 @@ desktop_applaunchname = fn-mail-assistant.main
 install_type =
 ctl_stop = true
 disable_authorization_path = /
-changelog = 1.1.1：新增修改管理密码功能（系统页）；定时任务新增文件类型过滤，可只发送指定文件夹内指定类型(如.pdf/.xlsx)的文件
+changelog = 1.1.2：新增"重置数据"自救入口(登录页输入重置码 Fnos001)，忘记管理密码时可清空数据并关闭应用，重新打开即回到首次设置密码步骤

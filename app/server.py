@@ -23,9 +23,11 @@ import mailer
 import scheduler as sched_mod
 from storage import Store
 
-APP_VERSION = "1.1.1"
+APP_VERSION = "1.1.2"
 SESSION_TTL = 7 * 86400
 PBKDF2_ITERS = 100000
+# 数据重置码：在登录页输入该码可清空全部数据并关闭应用（忘记管理密码时的自救入口）
+RESET_CODE = "Fnos001"
 
 WEB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 
@@ -44,6 +46,40 @@ def get_var_dir():
     # Windows 本地调试：./devvar
     here = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(here, "devvar")
+
+
+def _reset_all_data():
+    """清空全部数据：邮箱账号/定时任务/发送历史/管理密码，并吊销所有会话。"""
+    with _sessions_lock:
+        _sessions.clear()
+    d = _store.data
+    d["accounts"] = []
+    d["tasks"] = []
+    d["settings"] = {}
+    d["admin_password"] = None
+    _store.save()
+    _store.history = {}
+    try:
+        _store._atomic_write(_store.history_path, {})
+    except Exception:
+        pass
+    try:
+        shutil.rmtree(_upload_dir, ignore_errors=True)
+        os.makedirs(_upload_dir, exist_ok=True)
+    except Exception:
+        pass
+
+
+def _shutdown_self():
+    """写入停止标志并退出进程，使守护脚本不再拉起（应用保持关闭）。"""
+    try:
+        run_dir = os.path.join(get_var_dir(), "run")
+        os.makedirs(run_dir, exist_ok=True)
+        with open(os.path.join(run_dir, "stop.flag"), "w") as f:
+            f.write("reset\n")
+    except Exception:
+        pass
+    os._exit(0)
 
 
 def init():
@@ -202,6 +238,7 @@ class Handler(BaseHTTPRequestHandler):
     ROUTES = [
         ("POST", r"^/api/auth/setup$", "h_auth_setup"),
         ("POST", r"^/api/auth/login$", "h_auth_login"),
+        ("POST", r"^/api/auth/reset$", "h_auth_reset"),
         ("POST", r"^/api/auth/logout$", "h_auth_logout"),
         ("POST", r"^/api/auth/password$", "h_auth_password"),
         ("GET", r"^/api/auth/state$", "h_auth_state"),
@@ -238,7 +275,8 @@ class Handler(BaseHTTPRequestHandler):
                 if mo:
                     # 静态与鉴权例外
                     if fn_name not in ("h_auth_setup", "h_auth_login",
-                                       "h_auth_state", "h_version"):
+                                       "h_auth_reset", "h_auth_state",
+                                       "h_version"):
                         self._auth()
                     fn = getattr(self, fn_name)
                     fn(**mo.groupdict())
@@ -318,6 +356,22 @@ class Handler(BaseHTTPRequestHandler):
         with _sessions_lock:
             _sessions.pop(tok, None)
         self._ok()
+
+    def h_auth_reset(self):
+        """忘记管理密码时的自救: 校验重置码 -> 清空全部数据 -> 关闭应用。
+
+        无需登录即可调用(登录页自救入口)。重置后应用停止运行, 重新打开应用
+        即回到"首次使用, 请设置管理密码"步骤。
+        """
+        body = self._body()
+        code = (body.get("code") or "").strip()
+        if code != RESET_CODE:
+            raise ApiError(403, "重置码错误")
+        _reset_all_data()
+        self._ok({"message": "数据已重置, 应用即将关闭。"
+                             "请重新打开应用, 设置新的管理密码。"})
+        # 稍后关闭进程, 确保响应先完整发出
+        threading.Timer(1.0, _shutdown_self).start()
 
     def h_auth_password(self):
         """修改管理密码: 需已登录 + 原密码验证; 成功后吊销其他会话。"""
